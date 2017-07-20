@@ -16,11 +16,19 @@ def send_audio(message):
     chat_id = message.chat.id
     print(text)
     bot.send_message(chat_id, "Готовлюсь. Ждите...")
-    urllib.request.urlretrieve(
-        "https://tts.voicetech.yandex.net/generate?format=opus&lang=ru-RU&speaker=oksana&emotion=neutral&key=3a5d9637-997e-4f41-a560-79f74d173eaa&text=" + urllib.parse.quote_plus(text),
-        "voice.ogg")
-    voice = open('voice.ogg', 'rb')
-    bot.send_voice(chat_id, voice)
+    try:
+        urllib.request.urlretrieve(
+            "https://tts.voicetech.yandex.net/generate?format=opus&lang=ru-RU&speaker=oksana&emotion=neutral&key=3a5d9637-997e-4f41-a560-79f74d173eaa&text=" + urllib.parse.quote_plus(text),
+            "voice.ogg")
+        voice = open('voice.ogg', 'rb')
+        bot.send_voice(chat_id, voice)
+    except urllib.error.HTTPError as e:
+        print(e)
+        if e.code == 414:
+            bot.send_message(chat_id, "Слишком длинный текст. Попробуйте еще раз")
+        else:
+            bot.send_message(chat_id, "Неизвестная ошибка. Попробуйте еще раз")
+
 
 
 if __name__ == '__main__':
