@@ -22,6 +22,7 @@ def send_audio(message):
             "voice.ogg")
         voice = open('voice.ogg', 'rb')
         bot.send_voice(chat_id, voice)
+        bot.send_message(message.chat.id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
     except urllib.error.HTTPError as e:
         print(e)
         if e.code == 414:
