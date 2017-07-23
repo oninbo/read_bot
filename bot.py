@@ -6,12 +6,17 @@ import os
 
 bot = telebot.TeleBot(config.token)
 max_text_length = 1000
-handling = False
+handling = {}
 
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     bot.send_message(message.chat.id, "Привет! Чтобы отправить текст для чтения, отправьте текст сообщением")
+
+
+@bot.message_handler(commands=['help'])
+def handle_start(message):
+    bot.send_message(message.chat.id, "Чтобы отправить текст для чтения, отправьте текст сообщением")
 
 
 def text_to_audio(text, index):
@@ -32,12 +37,12 @@ def delete_audio(index):
 
 @bot.message_handler(content_types=["text"])
 def reply(message):
-    global handling
-    while handling:
-        time.sleep(10)
-    handling = True
-    text = message.text
     chat_id = message.chat.id
+    global handling
+    while chat_id in handling and handling[chat_id]:
+        time.sleep(10)
+    handling[chat_id] = True
+    text = message.text
     message_id = message.message_id
     print(message)
     parts_number = 1
@@ -69,8 +74,8 @@ def reply(message):
             bot.send_message(chat_id, str(number)+" часть из "+ str(parts_number))
         send_audio(chat_id, index)
         delete_audio(index)
-    bot.send_message(chat_id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
-    handling = False
+    #bot.send_message(chat_id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
+    handling[chat_id] = False
 
 
 if __name__ == '__main__':
