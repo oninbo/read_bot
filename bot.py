@@ -1,36 +1,48 @@
+import time
 import config
 import telebot
 import urllib
+import os
 
 bot = telebot.TeleBot(config.token)
 max_text_length = 1000
+handling = False
 
 
 @bot.message_handler(commands=['start'])
 def handle_start(message):
-    bot.send_message(message.chat.id, "Привет! Чтобы отправить текст для чтения, отправьте текст сообщением (не более "+str(max_text_length)+" символов)")
+    bot.send_message(message.chat.id, "Привет! Чтобы отправить текст для чтения, отправьте текст сообщением")
 
 
-def text_to_audio(text):
+def text_to_audio(text, index):
     urllib.request.urlretrieve(
         "https://tts.voicetech.yandex.net/generate?format=opus&lang=ru-RU&speaker=oksana&emotion=neutral&key=3a5d9637-997e-4f41-a560-79f74d173eaa&text=" + urllib.parse.quote_plus(
             text),
-        "voice.ogg")
+        "voice" + index + ".ogg")
 
 
-def send_audio(chat_id):
-    voice = open('voice.ogg', 'rb')
+def send_audio(chat_id, index):
+    voice = open("voice" + index + ".ogg", 'rb')
     bot.send_voice(chat_id, voice)
+
+
+def delete_audio(index):
+    os.remove("voice" + index + ".ogg")
 
 
 @bot.message_handler(content_types=["text"])
 def reply(message):
+    global handling
+    while handling:
+        time.sleep(10)
+    handling = True
     text = message.text
     chat_id = message.chat.id
-    print(text)
+    message_id = message.message_id
+    print(message)
     parts_number = 1
     text_length = len(text)
-    while text_length // parts_number > 1000:
+    while text_length // parts_number > max_text_length:
         parts_number = parts_number*2
     part_length = text_length // parts_number
     bot.send_message(chat_id, "Готовлюсь. Ждите...")
@@ -40,10 +52,9 @@ def reply(message):
         else:
             end = part_length*(i+1)
         try:
-            text_to_audio(text[part_length*i:end])
-            if parts_number > 1:
-                bot.send_message(chat_id, str(i+1)+" часть из "+ str(parts_number))
-            send_audio(chat_id)
+            number = i + 1
+            index = str(number) +'_'+ str(message_id)
+            text_to_audio(text[part_length*i:end], index)
         except urllib.error.HTTPError as e:
             print(e)
             print(len(text))
@@ -51,7 +62,15 @@ def reply(message):
         except urllib.error.URLError as e:
             print(e)
             bot.send_message(chat_id, "Ошибка. Попробуйсте еще раз")
+    for i in range(0, parts_number):
+        number = i + 1
+        index = str(number) +'_'+ str(message_id)
+        if parts_number > 1:
+            bot.send_message(chat_id, str(number)+" часть из "+ str(parts_number))
+        send_audio(chat_id, index)
+        delete_audio(index)
     bot.send_message(chat_id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
+    handling = False
 
 
 if __name__ == '__main__':
