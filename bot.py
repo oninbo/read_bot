@@ -25,11 +25,10 @@ def send_audio(message):
         bot.send_message(message.chat.id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
     except urllib.error.HTTPError as e:
         print(e)
-        if e.code == 414:
-            bot.send_message(chat_id, "Слишком длинный текст. Попробуйте еще раз")
-        else:
-            bot.send_message(chat_id, "Неизвестная ошибка. Попробуйте еще раз")
-
+        bot.send_message(chat_id, "Слишком длинный текст. Попробуйте еще раз")
+    except urllib.error.URLError as e:
+        print(e)
+        bot.send_message(chat_id, "Ошибка. Попробуйсте еще раз")
 
 
 if __name__ == '__main__':
