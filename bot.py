@@ -34,13 +34,21 @@ def handle_start(message):
 
 @bot.message_handler(commands=['male'])
 def handle_start(message):
-    user_data[message.chat.id]['speaker'] = 'ermil'
+    try:
+        user_data[message.chat.id]['speaker'] = 'ermil'
+    except:
+        set_user(message.chat.id)
+        user_data[message.chat.id]['speaker'] = 'ermil'
     bot.send_message(message.chat.id, '''Мужской голос установлен''')
 
 
 @bot.message_handler(commands=['female'])
 def handle_start(message):
-    user_data[message.chat.id]['speaker'] = 'oksana'
+    try:
+        user_data[message.chat.id]['speaker'] = 'oksana'
+    except:
+        set_user(message.chat.id)
+        user_data[message.chat.id]['speaker'] = 'oksana'
     bot.send_message(message.chat.id, '''Женский голос установлен''')
 
 
@@ -51,14 +59,22 @@ def handle_start(message):
 
 @bot.message_handler(commands=['slow'])
 def handle_start(message):
-    user_data[message.chat.id]['speed'] = '0.8'
+    try:
+        user_data[message.chat.id]['speed'] = '0.8'
+    except:
+        set_user(message.chat.id)
+        user_data[message.chat.id]['speed'] = '0.8'
     bot.send_message(message.chat.id, 'Медленный голос установлен')
 
 
 @bot.message_handler(commands=['fast'])
 def handle_start(message):
-    user_data[message.chat.id]['speed'] = '0.8'
-    bot.send_message(message.chat.id, 'Медленный голос установлен')
+    try:
+        user_data[message.chat.id]['speed'] = '0.9'
+    except:
+        set_user(message.chat.id)
+        user_data[message.chat.id]['speed'] = '0.9'
+    bot.send_message(message.chat.id, 'Быстрый голос установлен')
 
 
 @bot.message_handler(commands=['default'])
@@ -71,7 +87,11 @@ def handle_start(message):
 def send_audio(message):
     text = message.text
     chat_id = message.chat.id
-    user_obj = user_data[chat_id]
+    try:
+        user_obj = user_data[chat_id]
+    except:
+        set_user(chat_id)
+        user_obj = user_data[chat_id]
     print(text)
     bot.send_message(chat_id, "Готовлюсь. Ждите...")
     params = { 'speed': user_obj['speed'], "format": 'opus', 'lang': 'ru-RU', 'speaker': user_obj['speaker'],
