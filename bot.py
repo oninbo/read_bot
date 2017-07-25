@@ -92,16 +92,17 @@ def handle_start(message):
     bot.send_message(message.chat.id, "Чтобы отправить текст для чтения, отправьте текст сообщением")
 
 
-def text_to_audio(text, index):
+def text_to_audio(text, speed, speaker, index):
+    params = {'speed': speed, "format": 'opus', 'lang': 'ru-RU', 'speaker': speaker,
+              'key': '3a5d9637-997e-4f41-a560-79f74d173eaa', 'text': text}
     urllib.request.urlretrieve(
-        "https://tts.voicetech.yandex.net/generate?format=opus&lang=ru-RU&speaker=oksana&emotion=neutral&key=3a5d9637-997e-4f41-a560-79f74d173eaa&text=" + urllib.parse.quote_plus(
-            text),
-        "voice" + index + ".ogg")
+        "https://tts.voicetech.yandex.net/generate?" + urllib.parse.urlencode(params),"voice" + index + ".ogg")
 
 
 def send_audio(chat_id, index):
     voice = open("voice" + index + ".ogg", 'rb')
     bot.send_voice(chat_id, voice)
+
 
 
 def delete_audio(index):
@@ -138,7 +139,7 @@ def reply(message):
         try:
             number = i + 1
             index = str(number) +'_'+ str(message_id)
-            text_to_audio(text[part_length*i:end], index)
+            text_to_audio(text[part_length*i:end], user_obj['speed'], user_obj['speaker'], index)
         except urllib.error.HTTPError as e:
             print(e)
             print(len(text))
@@ -155,20 +156,6 @@ def reply(message):
         delete_audio(index)
     #bot.send_message(chat_id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
     handling[chat_id] = False
-    params = { 'speed': user_obj['speed'], "format": 'opus', 'lang': 'ru-RU', 'speaker': user_obj['speaker'],
-              'key': '3a5d9637-997e-4f41-a560-79f74d173eaa', 'text': text}
-    try:
-        urllib.request.urlretrieve(
-            "https://tts.voicetech.yandex.net/generate?" + urllib.parse.urlencode(params),"voice.ogg")
-        voice = open('voice.ogg', 'rb')
-        bot.send_voice(chat_id, voice)
-        #bot.send_message(message.chat.id, "Чтобы отправить текст для чтения снова, отправьте текст сообщением")
-    except urllib.error.HTTPError as e:
-        print(e)
-        if e.code == 414:
-            bot.send_message(chat_id, "Слишком длинный текст. Попробуйте еще раз")
-        else:
-            bot.send_message(chat_id, "Неизвестная ошибка. Попробуйте еще раз")
 
 
 
